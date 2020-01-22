@@ -5,6 +5,7 @@ Client for communicating with Vilfo API
 import json
 import requests
 
+import vilfo.exceptions
 
 class Client:
     """
@@ -27,7 +28,16 @@ class Client:
         }
         timeout = timeout or self.DEFAULT_TIMEOUT
 
-        response = getattr(requests, method)(url, headers=headers, data=data, params=params, timeout=timeout)
+        try:
+            response = getattr(requests, method)(url, headers=headers, data=data, params=params, timeout=timeout)
+        except requests.exceptions.RequestException as ex:
+            raise ex
+
+        if 404 == response.status_code:
+            raise vilfo.exceptions.VilfoException()
+
+        if 403 == response.status_code:
+            raise vilfo.exceptions.AuthenticationException()
 
         return response
 
@@ -52,10 +62,7 @@ class Client:
     def get_device(self, mac_address):
         response = None
         try:
-            response = requests.get(
-                self._base_url + '/devices/' + mac_address,
-                headers={
-                    'Authorization': 'Bearer ' + self._token })
+            response = self._request('get', '/devices/%s' % mac_address)
         except requests.exceptions.RequestException as ex:
             raise ex
 
@@ -80,6 +87,16 @@ class Client:
             return False
 
         return False
+
+    def get_load(self):
+        response = None
+
+        try:
+            response = self._request('get', '/dashboard/board')
+        except requests.exceptions.RequestException as ex:
+            raise ex
+
+        return json.loads(response.text)
 
     def reboot_router(self):
         response = None
