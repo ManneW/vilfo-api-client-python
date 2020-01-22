@@ -18,6 +18,41 @@ class TestVilfo(unittest.TestCase):
         self.assertEqual(resp, {'message': 'Online'})
 
     @responses.activate
+    def test_get_device(self):
+        """
+        Test that the fetching of devices triggers a call to the appropriate endpoint
+        """
+        client = vilfo.Client('vilfotestrouter', 'testtoken')
+
+        responses.add(responses.GET, 'http://vilfotestrouter/api/v1/devices/abc:123',
+                      json={
+                        "data": {
+                            "blocked": False,
+                            "hostname": "box-7",
+                            "displayName": "Box 7",
+                            "ipv4": "192.168.0.7",
+                            "mac_address": "08:00:27:8e:ac:31",
+                            "vendor": "PCS Systemtechnik GmbH",
+                            "vilfo_group": 1,
+                            "bandwidth": {
+                            "download": 0.5,
+                            "upload": 0.2,
+                            "total": 0.7
+                            },
+                            "bypass": True,
+                            "first_seen_at": "2017-09-20T12:42:58+00:00",
+                            "status": {
+                            "online": True,
+                            "online_from": "2017-09-20T12:42:58+00:00"
+                            }
+                        }
+                      }, status=200)
+        
+        resp = client.get_device('abc:123')
+
+        self.assertIsNotNone(resp)
+
+    @responses.activate
     def test_is_device_online(self):
         """
         Test that it works as expected to check if a device is online
