@@ -42,6 +42,13 @@ class Client:
         return response
 
     def ping(self):
+        """Perform a check if the Vilfo router is online.
+        
+        See https://www.vilfo.com/apidocs/#system-ping-get for more information.
+        
+        Note that this endpoint can be called and executed successfully even when not providing
+        valid credentials.
+        """
         response = None
         try:
             response = self._request('get', '/system/ping')
@@ -51,6 +58,10 @@ class Client:
         return json.loads(response.text)
 
     def get_devices(self):
+        """Get a list of all devices connected to the router.
+
+        See https://www.vilfo.com/apidocs/#devices-devices-get for more information.
+        """
         response = None
         try:
             response = self._request('get', '/devices')
@@ -72,10 +83,10 @@ class Client:
         response = None
 
         try:
-            response = requests.get(
-                self._base_url + '/devices/' + mac_address,
-                headers={
-                    'Authorization': 'Bearer ' + self._token })
+            response = self._request(
+                method = 'get',
+                endpoint = self._base_url + '/devices/' + mac_address,
+            )
         except requests.exceptions.RequestException as ex:
             raise ex
 
