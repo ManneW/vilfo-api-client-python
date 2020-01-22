@@ -36,7 +36,7 @@ class Client:
         if 404 == response.status_code:
             raise vilfo.exceptions.VilfoException()
 
-        if 403 == response.status_code:
+        if 403 == response.status_code or response_content_is_login_page(response.content):
             raise vilfo.exceptions.AuthenticationException()
 
         return response
@@ -108,3 +108,20 @@ class Client:
             raise ex
 
         return json.loads(response.text)
+
+# Utility methods
+def response_content_is_login_page(response_content):
+    """Returns True if the provided response_content seems to be from the Vilfo login page."""
+
+    detectors = [
+        "<title>Login | Vilfo</title>",
+        "<Login-Form",
+    ]
+
+    detected_count = 0
+
+    for detector in detectors:
+        if detector in str(response_content):
+            detected_count += 1
+
+    return (detected_count >= (len(detectors) / 2)) # Allow half of the detectors to fail for now.
