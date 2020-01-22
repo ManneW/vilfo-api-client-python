@@ -80,16 +80,6 @@ class Client:
         return json.loads(response.text)
 
     def is_device_online(self, mac_address):
-        response = None
-
-        try:
-            response = self._request(
-                method = 'get',
-                endpoint = self._base_url + '/devices/' + mac_address,
-            )
-        except requests.exceptions.RequestException as ex:
-            raise ex
-
         try:
             result = json.loads(response.text)
             
