@@ -10,6 +10,12 @@ See `vilfo/client.py` for additional information about available methods. A shor
 
 Please note that this software is not affiliated with Vilfo AB, is not an official client for the Vilfo router API and the developers take no legal responsibility for the functionality or security of your Vilfo router. Support is only offered on a community basis.
 
+## Information about the Vilfo router and API
+
+You can find more information about the Vilfo router on [www.vilfo.com](https://www.vilfo.com/).
+
+From there you can also find information about the API in the form of the official API documentation: https://www.vilfo.com/apidocs/
+
 ## Installation
 
 The preferred installation method is by using `pip`:

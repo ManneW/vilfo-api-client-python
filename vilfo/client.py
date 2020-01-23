@@ -6,6 +6,7 @@ import requests
 
 import vilfo.exceptions
 
+
 class Client:
     """
     Vilfo API client
@@ -45,9 +46,9 @@ class Client:
 
     def ping(self):
         """Perform a check if the Vilfo router is online.
-        
+
         See https://www.vilfo.com/apidocs/#system-ping-get for more information.
-        
+
         Note that this endpoint can be called and executed successfully even when not providing
         valid credentials.
         """
@@ -92,7 +93,7 @@ class Client:
         """
         try:
             result = self.get_device(mac_address)
-            
+
             return result['data']['status']['online']
         except:
             return False
@@ -182,6 +183,7 @@ class Client:
 
         return json.loads(response.text)
 
+
 # Utility methods
 def response_content_is_login_page(response_content):
     """Returns True if the provided response_content seems to be from the Vilfo login page."""
@@ -197,4 +199,4 @@ def response_content_is_login_page(response_content):
         if detector in str(response_content):
             detected_count += 1
 
-    return (detected_count >= (len(detectors) / 2)) # Allow half of the detectors to fail for now.
+    return (detected_count >= (len(detectors) / 2))  # Allow half of the detectors to fail for now.
