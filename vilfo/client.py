@@ -1,7 +1,6 @@
 '''
 Client for communicating with Vilfo API
 '''
-
 import json
 import requests
 
@@ -21,6 +20,9 @@ class Client:
         self._base_url = protocol + host + '/api/v1'
 
     def _request(self, method, endpoint, headers=None, data=None, params=None, timeout=None):
+        """Internal method to facilitate performing requests with authentication added to them
+        and appropriate creation of common exceptions if they are encountered.
+        """
         url = self._base_url + endpoint
         headers = headers or {
             "Content-Type": "application/json",
@@ -97,7 +99,12 @@ class Client:
 
         return False
 
-    def get_load(self):
+    def get_board_information(self):
+        """Return information about system.
+
+        For more information:
+            * https://www.vilfo.com/apidocs/#dashboard-board-information-get
+        """
         response = None
 
         try:
@@ -107,7 +114,64 @@ class Client:
 
         return json.loads(response.text)
 
+    def get_load(self):
+        """Get the current load in percent.
+
+        Note: This is currently implemented as first trying to fetch the load from get_board_information,
+              but since is not seems to always be present there, falls back to extract it from get_utilization.
+
+        For more information:
+            * https://www.vilfo.com/apidocs/#dashboard-board-information-get
+            * https://www.vilfo.com/apidocs/#dashboard-utilization-get
+        """
+        try:
+            result = self.get_board_information()
+            if "load" in result:
+                return result['load']
+        except:
+            raise
+
+        try:
+            result = self.get_utilization()
+            if "utilization" in result and len(result["utilization"]) > 0:
+                return result['utilization'][-1]
+        except:
+            return None
+
+    def get_utilization(self):
+        """Return timeseries information about utilization for recent 3 hours.
+
+        See https://www.vilfo.com/apidocs/#dashboard-utilization-get for more information.
+        """
+        response = None
+        try:
+            response = self._request('get', '/dashboard/utilization')
+        except:
+            raise
+
+        return json.loads(response.text)
+
+    def get_online_devices(self):
+        """Return information about online vs. offline devices.
+
+        See https://www.vilfo.com/apidocs/#dashboard-online-devices-get for more information.
+        """
+        response = None
+        try:
+            response = self._request('get', '/dashboard/online-devices')
+        except:
+            raise
+
+        return json.loads(response.text)
+
     def reboot_router(self):
+        """Perform a reboot of the router.
+
+        Tip: To detect when the router is back online, use the ping() method.
+
+        For more information:
+            * https://www.vilfo.com/apidocs/#system-reboot-post
+        """
         response = None
         try:
             response = requests.post(
