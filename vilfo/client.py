@@ -71,6 +71,10 @@ class Client:
         return json.loads(response.text)
 
     def get_device(self, mac_address):
+        """Get information about a specific device by MAC address.
+
+        See https://www.vilfo.com/apidocs/#devices-devices-get-1 for more information.
+        """
         response = None
         try:
             response = self._request('get', '/devices/%s' % mac_address)
@@ -80,8 +84,12 @@ class Client:
         return json.loads(response.text)
 
     def is_device_online(self, mac_address):
+        """Returns a boolean indicating whether or not the device is online.
+
+        Uses the get_device method under the hood.
+        """
         try:
-            result = json.loads(response.text)
+            result = self.get_device(mac_address)
             
             return result['data']['status']['online']
         except:
