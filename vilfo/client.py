@@ -1,11 +1,13 @@
 '''
 Client for communicating with Vilfo API
 '''
+import ipaddress
 import json
 import requests
 
 import vilfo.exceptions
 
+from getmac import get_mac_address
 
 class Client:
     """
@@ -19,6 +21,15 @@ class Client:
         self._token = token
         protocol = 'https://' if ssl else 'http://'
         self._base_url = protocol + host + '/api/v1'
+
+        # MAC address not resolved yet
+        self.mac = None
+        self._mac_resolution_failed = False
+
+        try:
+            self.resolve_mac_address()
+        except vilfo.exceptions.VilfoException:
+            pass
 
     def _request(self, method, endpoint, headers=None, data=None, params=None, timeout=None):
         """Internal method to facilitate performing requests with authentication added to them
@@ -43,6 +54,43 @@ class Client:
             raise vilfo.exceptions.AuthenticationException()
 
         return response
+
+
+    def resolve_mac_address(self, force_retry=False):
+        """Try to resolve the MAC address for the router itself.
+        
+        The address is saved in the client instance, but by using force_retry 
+        """
+        if (self.mac or self._mac_resolution_failed) and not force_retry:
+            return self.mac
+
+        resolved_mac = None
+        host_is_hostname = False
+        valid_ipaddress = None
+        ipaddress_version = None
+
+        try:
+            valid_ipaddress = ipaddress.ip_address(self._host)
+            ipaddress_version = valid_ipaddress.version
+        except ValueError:
+            # For now, assume that the _host is a hostname if it's not a valid IP
+            host_is_hostname = True
+
+        if host_is_hostname:
+            resolved_mac = get_mac_address(hostname=self._host, network_request=True)
+        elif valid_ipaddress and ipaddress_version == 4:
+            resolved_mac = get_mac_address(ip=self._host)
+        elif valid_ipaddress and ipaddress_version == 6:
+            resolved_mac = get_mac_address(ip6=self._host)
+
+        if not resolved_mac:
+            self._mac_resolution_failed = True
+            raise vilfo.exceptions.VilfoException
+
+        self._mac_resolution_failed = False
+        self.mac = resolved_mac
+
+        return resolved_mac
 
     def ping(self):
         """Perform a check if the Vilfo router is online.
