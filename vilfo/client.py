@@ -25,9 +25,10 @@ class Client:
         # MAC address not resolved yet
         self.mac = None
         self._mac_resolution_failed = False
+        self._cached_mac = None
 
         try:
-            self.resolve_mac_address()
+            self.mac = self.resolve_mac_address()
         except vilfo.exceptions.VilfoException:
             pass
 
@@ -64,8 +65,8 @@ class Client:
         Raises:
             - vilfo.exception.VilfoException: if the resolution failed
         """
-        if (self.mac or self._mac_resolution_failed) and not force_retry:
-            return self.mac
+        if (self._cached_mac or self._mac_resolution_failed) and not force_retry:
+            return self._cached_mac
 
         resolved_mac = None
         host_is_hostname = False
@@ -94,7 +95,7 @@ class Client:
             raise vilfo.exceptions.VilfoException
 
         self._mac_resolution_failed = False
-        self.mac = resolved_mac
+        self._cached_mac = resolved_mac
 
         return resolved_mac
 

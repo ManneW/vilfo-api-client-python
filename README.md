@@ -78,3 +78,13 @@ except vilfo.exceptions.AuthenticationException:
 The `vilfo-api-client` library defines a set of exceptions that can be used to handle errors. These exception classes are located under `vilfo.exceptions`.
 
 *Additional information about the exceptions will be added and exception and error handling will be improved further.*
+
+## Changelog
+
+### Version 0.3.1
+
+Minor adjustment in Client constructor to allow for better mocking during testing.
+
+### Version 0.3
+
+Initial stable release.
