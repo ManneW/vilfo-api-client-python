@@ -46,10 +46,11 @@ class Client:
         try:
             response = getattr(requests, method)(url, headers=headers, data=data, params=params, timeout=timeout)
         except requests.exceptions.RequestException as ex:
-            raise ex
+            # Wrap the exception in our own exception class.
+            raise vilfo.exceptions.VilfoRequestException(ex)
 
         if 404 == response.status_code:
-            raise vilfo.exceptions.VilfoException()
+            raise vilfo.exceptions.NotFoundException()
 
         if 403 == response.status_code or response_content_is_login_page(response.content):
             raise vilfo.exceptions.AuthenticationException()
