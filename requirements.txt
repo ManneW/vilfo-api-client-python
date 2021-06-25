@@ -1,2 +1,2 @@
 requests
-get-mac~=0.8
+getmac~=0.8
