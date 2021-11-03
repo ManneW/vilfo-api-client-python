@@ -129,18 +129,42 @@ class Client:
 
         return json.loads(response.text)
 
-    def get_device(self, mac_address):
+    def get_device_by_ip(self, ip_address):
+        """Get information about a specific device by IP address."""
         """Get information about a specific device by MAC address.
 
         See https://www.vilfo.com/apidocs/#devices-devices-get-1 for more information.
         """
         response = None
         try:
-            response = self._request('get', '/devices/%s' % mac_address)
+            response = self._request('get', '/devices/%s' % ip_address)
         except requests.exceptions.RequestException as ex:
             raise ex
 
         return json.loads(response.text)
+
+    def get_device(self, mac_address):
+        """Get information about a specific device by MAC address.
+
+        See https://www.vilfo.com/apidocs/#devices-devices-get-1 for more information.
+        """
+        devices = None
+        try:
+            devices = self.get_devices()
+        except requests.exceptions.RequestException as ex:
+            raise ex
+
+        try:
+            device_info = list(filter(lambda device: device['mac_address'] and device['mac_address'] == mac_address, devices['data']))
+        except Exception as ex:
+            device_info = None
+
+        device_current_ip = (device_info.pop())['ipv4']
+
+        if not device_current_ip:
+            return None
+
+        return self.get_device_by_ip(device_current_ip)
 
     def is_device_online(self, mac_address):
         """Returns a boolean indicating whether or not the device is online.
