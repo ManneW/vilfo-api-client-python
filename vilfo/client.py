@@ -4,6 +4,7 @@ Client for communicating with Vilfo API
 import ipaddress
 import json
 import requests
+from semver.version import Version as SemverVersion
 
 import vilfo.exceptions
 
@@ -26,11 +27,21 @@ class Client:
         self.mac = None
         self._mac_resolution_failed = False
         self._cached_mac = None
+        self._firmware_version = "1.1.0"
+
+        try:
+            self._firmware_version = self.resolve_firmware_version()
+        except vilfo.exceptions.VilfoException:
+            pass
 
         try:
             self.mac = self.resolve_mac_address()
         except vilfo.exceptions.VilfoException:
             pass
+
+        self._api_v1_supported = SemverVersion.parse(self._firmware_version) >= "1.1.0"
+
+        print(self._api_v1_supported)
 
     def _request(self, method, endpoint, headers=None, data=None, params=None, timeout=None):
         """Internal method to facilitate performing requests with authentication added to them
@@ -57,6 +68,15 @@ class Client:
 
         return response
 
+    def resolve_firmware_version(self):
+        """Try to resolve the current firmware version."""
+        response = None
+        try:
+            response = self.get_board_information()
+        except requests.exceptions.RequestException as ex:
+            raise ex
+
+        return response["version"]
 
     def resolve_mac_address(self, force_retry=False):
         """Try to resolve the MAC address for the router itself.
@@ -129,11 +149,21 @@ class Client:
 
         return json.loads(response.text)
 
-    def get_device(self, mac_address):
+    def get_device_by_ip(self, ip_address):
+        """Get information about a specific device by IP address."""
         """Get information about a specific device by MAC address.
 
         See https://www.vilfo.com/apidocs/#devices-devices-get-1 for more information.
         """
+        response = None
+        try:
+            response = self._request('get', '/devices/%s' % ip_address)
+        except requests.exceptions.RequestException as ex:
+            raise ex
+
+        return json.loads(response.text)
+
+    def _get_device_by_mac(self, mac_address):
         response = None
         try:
             response = self._request('get', '/devices/%s' % mac_address)
@@ -141,6 +171,33 @@ class Client:
             raise ex
 
         return json.loads(response.text)
+
+    def get_device(self, mac_address):
+        """Get information about a specific device by MAC address.
+
+        See https://www.vilfo.com/apidocs/#devices-devices-get-1 for more information.
+        """
+        if not self._api_v1_supported:
+            """Use legacy version which fetches devices by MAC address"""
+            return self._get_device_by_mac(mac_address)
+
+        devices = None
+        try:
+            devices = self.get_devices()
+        except requests.exceptions.RequestException as ex:
+            raise ex
+
+        try:
+            device_info = list(filter(lambda device: device['mac_address'] and device['mac_address'] == mac_address, devices['data']))
+        except Exception as ex:
+            device_info = None
+
+        device_current_ip = (device_info.pop())['ipv4']
+
+        if not device_current_ip:
+            return None
+
+        return self.get_device_by_ip(device_current_ip)
 
     def is_device_online(self, mac_address):
         """Returns a boolean indicating whether or not the device is online.
