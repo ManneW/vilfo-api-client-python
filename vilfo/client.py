@@ -4,7 +4,7 @@ Client for communicating with Vilfo API
 import ipaddress
 import json
 import requests
-from semver.version import Version as SemverVersion
+from semver import compare as semver_compare
 
 import vilfo.exceptions
 
@@ -39,9 +39,7 @@ class Client:
         except vilfo.exceptions.VilfoException:
             pass
 
-        self._api_v1_supported = SemverVersion.parse(self._firmware_version) >= "1.1.0"
-
-        print(self._api_v1_supported)
+        self._api_v1_supported = semver_compare(self._firmware_version, "1.1.0") >= 0
 
     def _request(self, method, endpoint, headers=None, data=None, params=None, timeout=None):
         """Internal method to facilitate performing requests with authentication added to them

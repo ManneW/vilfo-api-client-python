@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 requests = "*"
 getmac = "~=0.8"
-semver = "*"
+semver = "~=2.0"
 
 [dev-packages]
 black = "*"

@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1c31aa31bfe24ef719a4a72cace3773661862d56948ae6d741cc276724c5afe5"
+            "sha256": "67c2dcf48b4a0397d235a4986024838f373c2d9eba182b963287910f9138b09f"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -57,11 +57,11 @@
         },
         "semver": {
             "hashes": [
-                "sha256:153511dda7e85ce68673607bc7565e252b6495b23a5f631d73c59138b7aea5db",
-                "sha256:55dd56b0144d7fa48708300076d861655769bcfc4334b22cbb08486bf976eb6c"
+                "sha256:ced8b23dceb22134307c1b8abfa523da14198793d9787ac838e70e29e77458d4",
+                "sha256:fa0fe2722ee1c3f57eac478820c3a5ae2f624af8264cbdf9000c980ff7f75e3f"
             ],
             "index": "pypi",
-            "version": "==3.0.0.dev2"
+            "version": "==2.13.0"
         },
         "urllib3": {
             "hashes": [
