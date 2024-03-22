@@ -39,7 +39,7 @@ class Client:
         except vilfo.exceptions.VilfoException:
             pass
 
-        self._api_v1_supported = Version(self._firmware_version).compare("1.1.0") >= 0
+        self._api_v1_supported = Version.parse(self._firmware_version).compare("1.1.0") >= 0
 
     def _request(self, method, endpoint, headers=None, data=None, params=None, timeout=None):
         """Internal method to facilitate performing requests with authentication added to them
